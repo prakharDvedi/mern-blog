@@ -11,9 +11,10 @@ const multer = require("multer");
 const { storage } = require('./cloudinary');
 const uploadMiddleware = multer({ storage });
 const fs = require("fs");
+require('dotenv').config();
 
 const salt = bcrypt.genSaltSync(10);
-const secret = "asdfe45we45w345wegw345werjktjwertkj";
+const secret = process.env.JWT_SECRET;
 
 // Fix Mongoose deprecation warning
 mongoose.set('strictQuery', false);
@@ -24,7 +25,7 @@ app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
 mongoose.connect(
-  "mongodb+srv://Prakhar:Plasma%402005@cluster0.ei4shwv.mongodb.net/mern-auth?retryWrites=true&w=majority"
+  process.env.MONGODB_URI
 ).then(() => {
   console.log("Connected to MongoDB successfully");
 }).catch((err) => {
