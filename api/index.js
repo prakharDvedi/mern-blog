@@ -8,49 +8,60 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
-const { storage } = require('./cloudinary');
+const { storage } = require("./cloudinary");
 const uploadMiddleware = multer({ storage });
 const fs = require("fs");
-require('dotenv').config();
+require("dotenv").config();
 
 const salt = bcrypt.genSaltSync(10);
 const secret = process.env.JWT_SECRET;
 
 // Fix Mongoose deprecation warning
-mongoose.set('strictQuery', false);
+mongoose.set("strictQuery", false);
 
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(
+  cors({
+    credentials: true,
+    origin: ["http://localhost:3000", "https://blogit-lilac.vercel.app"],
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
-mongoose.connect(
-  process.env.MONGODB_URI
-).then(() => {
-  console.log("Connected to MongoDB successfully");
-}).catch((err) => {
-  console.log("MongoDB connection error:", err.message);
-});
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("Connected to MongoDB successfully");
+  })
+  .catch((err) => {
+    console.log("MongoDB connection error:", err.message);
+  });
 
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
-  
+
   // Log the request data
-  console.log("Register request received:", { username, password: password ? "***" : "missing" });
-  
+  console.log("Register request received:", {
+    username,
+    password: password ? "***" : "missing",
+  });
+
   // Check if required fields are present
   if (!username || !password) {
     console.log("Missing required fields");
-    return res.status(400).json({ error: "Username and password are required" });
+    return res
+      .status(400)
+      .json({ error: "Username and password are required" });
   }
-  
+
   // Check if username already exists
   const existingUser = await User.findOne({ username });
   if (existingUser) {
     console.log("Username already exists:", username);
     return res.status(400).json({ error: "Username already exists" });
   }
-  
+
   try {
     const userDoc = await User.create({
       username,
@@ -99,8 +110,8 @@ app.post("/logout", (req, res) => {
   res.cookie("token", "").json("ok");
 });
 
-app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
-  console.log('File uploaded:', req.file);
+app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
+  console.log("File uploaded:", req.file);
   const { token } = req.cookies;
   jwt.verify(token, secret, {}, async (err, info) => {
     if (err) throw err;
@@ -170,4 +181,3 @@ app.get("/post/:id", async (req, res) => {
 app.listen(4000, () => {
   console.log("Server running on http://localhost:4000");
 });
-
