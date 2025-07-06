@@ -8,7 +8,8 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
-const uploadMiddleware = multer({ dest: "uploads/" });
+const { storage } = require('./cloudinary');
+const uploadMiddleware = multer({ storage });
 const fs = require("fs");
 
 const salt = bcrypt.genSaltSync(10);
@@ -97,27 +98,18 @@ app.post("/logout", (req, res) => {
   res.cookie("token", "").json("ok");
 });
 
-app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
-  const { originalname, path } = req.file;
-  const parts = originalname.split(".");
-  const ext = parts[parts.length - 1];
-  const newPath = path + "." + ext;
-  fs.renameSync(path, newPath);
-
+app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
+  console.log('File uploaded:', req.file);
   const { token } = req.cookies;
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
   jwt.verify(token, secret, {}, async (err, info) => {
-    if (err) {
-      return res.status(401).json({ error: "Invalid token" });
-    }
+    if (err) throw err;
     const { title, summary, content } = req.body;
+    // Cloudinary stores the file URL in req.file.path
     const postDoc = await Post.create({
       title,
       summary,
       content,
-      cover: newPath,
+      cover: req.file.path, // This is the Cloudinary URL
       author: info.id,
     });
     res.json(postDoc);
