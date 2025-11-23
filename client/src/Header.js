@@ -47,7 +47,7 @@ export default function Header() {
         {username ? (
           <>
             <Link to="/create">Create new post</Link>
-            <button onClick={logout} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer' }}>
+            <button onClick={logout} className="logout-btn">
               Logout ({username})
             </button>
           </>
