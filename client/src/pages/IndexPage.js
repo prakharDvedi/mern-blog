@@ -1,7 +1,7 @@
 import Post from "../Post";
 import LoadingSpinner from "../components/LoadingSpinner";
-import {useEffect, useState} from "react";
-import './IndexPage.css';
+import { useEffect, useState } from "react";
+import "./IndexPage.css";
 
 export default function IndexPage() {
   const [posts, setPosts] = useState([]);
@@ -14,7 +14,7 @@ export default function IndexPage() {
         setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_API_URL}/post`);
         if (!response.ok) {
-          throw new Error('Failed to fetch posts');
+          throw new Error("Failed to fetch posts");
         }
         const posts = await response.json();
         setPosts(posts);
@@ -38,7 +38,10 @@ export default function IndexPage() {
         <div className="error-icon">⚠️</div>
         <h2>Oops! Something went wrong</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()} className="retry-button">
+        <button
+          onClick={() => window.location.reload()}
+          className="retry-button"
+        >
           Try Again
         </button>
       </div>
